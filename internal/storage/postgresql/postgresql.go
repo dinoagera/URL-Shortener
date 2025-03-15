@@ -34,7 +34,7 @@ func (s *Storage) SaveURL(urlForSave string, name string) error {
 	return nil
 }
 func (s *Storage) GetURL(name string) (string, error) {
-	stmt, err := s.db.Prepare("SELECT name, url FROM urlshortener WHERE name = $1")
+	stmt, err := s.db.Prepare("SELECT url FROM urlshortener WHERE name = $1")
 	if err != nil {
 		return "", fmt.Errorf("error:%s", err.Error())
 	}
