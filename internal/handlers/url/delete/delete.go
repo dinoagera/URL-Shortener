@@ -1,4 +1,4 @@
-package redirect
+package delhand
 
 import (
 	"encoding/json"
@@ -8,35 +8,34 @@ import (
 	"github.com/go-chi/chi"
 )
 
-type URLGetter interface {
-	GetURL(name string) (string, error)
+type DeleteURL interface {
+	DeleteURL(name string) error
 }
 type Response struct {
 	Status string `json:"status"`
 	Error  string `json:"error,omitempty"`
-	URL    string `json:"url,omitempty"`
 }
 
-func New(log *slog.Logger, urlgetter URLGetter) http.HandlerFunc {
+func New(log *slog.Logger, deleteurl DeleteURL) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := chi.URLParam(r, "name")
 		if name == "" {
-			log.Info("name is empty")
+			log.Info("url not found")
 			json.NewEncoder(w).Encode(&Response{
 				Status: "StatusError",
-				Error:  "faild with encoding dates",
-				URL:    "",
+				Error:  "URL not found",
 			})
 		}
-		url, err := urlgetter.GetURL(name)
+		err := deleteurl.DeleteURL(name)
 		if err != nil {
-			log.Info("get url to failed")
+			log.Info("db to failed")
 			json.NewEncoder(w).Encode(&Response{
 				Status: "StatusError",
-				Error:  "DB to failed",
-				URL:    "",
+				Error:  "URL not found",
 			})
 		}
-		http.Redirect(w, r, url, http.StatusFound)
+		json.NewEncoder(w).Encode(&Response{
+			Status: "StatusOK",
+		})
 	}
 }

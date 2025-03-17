@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"os"
 	"restapi/internal/config"
+	delhand "restapi/internal/handlers/url/delete"
 	"restapi/internal/handlers/url/redirect"
 	"restapi/internal/handlers/url/save"
 	"restapi/internal/storage/postgresql"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 const (
@@ -29,8 +31,14 @@ func main() {
 		return
 	}
 	router := chi.NewRouter()
-	router.Post("/url", save.New(log, storage))
-	router.Get("/{name}", redirect.New(log, storage))
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
+		r.Post("/", save.New(log, storage))
+		r.Get("/{name}", redirect.New(log, storage))
+		r.Delete("/{name}", delhand.New(log, storage))
+	})
 	log.Info(fmt.Sprintf("start server on address:%s", cfg.Address))
 	srv := &http.Server{
 		Addr:         cfg.Address,
