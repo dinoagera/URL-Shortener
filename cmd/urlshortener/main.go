@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"restapi/internal/config"
+	"restapi/config"
 	delhand "restapi/internal/handlers/url/delete"
 	"restapi/internal/handlers/url/redirect"
 	"restapi/internal/handlers/url/save"
